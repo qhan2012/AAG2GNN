@@ -1,0 +1,133 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+.env/
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# PyTorch and model files
+*.pth
+*.pt
+*.pkl
+*.pickle
+
+# Test coverage
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Documentation
+docs/_build/
+site/
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+*.bak
+*.backup
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Project-specific files
+sample.aag
+*.aag.bak
+*.aag.tmp
+results/
+outputs/
+logs/
+checkpoints/
+models/
+data/
+datasets/
+experiments/
+runs/
+wandb/
+tensorboard_logs/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Large files
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Generated graphs and visualizations
+graphs/
+saved_models/
+*.png
+*.jpg
+*.jpeg
+*.pdf
+*.svg
+
+# Benchmark results and temporary files
+benchmark/results/
+benchmark/temp/
+benchmark/*.tmp
+benchmark/*.bak
+
+# Development and testing files
+test_outputs/
+debug/
+temp/
+tmp/
