@@ -17,7 +17,7 @@ A Python library that transforms AAG (And-Inverter Graph) netlists into fully en
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/qhan2012/AAG2GNN.git
 cd aag2gnn
 
 # Install dependencies
