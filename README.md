@@ -57,7 +57,7 @@ One-step pipeline to convert AAG to PyG graph.
 - `include_inverter` (bool): Include inverter edge features
 
 **Returns:**
-- `torch_geometric.data.Data`: Fully enriched graph
+- `torch_geometric.data.Data`: Fully enriched graph with 6 global features (see above)
 
 #### `parse_aag(file_path)`
 Parse an AAG file and extract structure.
@@ -102,7 +102,17 @@ Each edge has 2 features: `[is_inverted, level_diff]`
 | `level_diff` | int | `level(dst) - level(src)` |
 
 ### Graph Features (`data.global_x`)
-Global features: `[num_nodes, num_edges, num_inputs, num_outputs, avg_fanin]`
+
+- Global features: `[num_nodes, num_edges, num_inputs, num_outputs, avg_fanin, max_level]`
+
+| Feature      | Type  | Description                                 |
+|------------- |------ |---------------------------------------------|
+| num_nodes    | int   | Number of nodes in the graph                |
+| num_edges    | int   | Number of edges in the graph                |
+| num_inputs   | int   | Number of primary input nodes               |
+| num_outputs  | int   | Number of primary output nodes              |
+| avg_fanin    | float | Average number of incoming edges per node   |
+| max_level    | int   | Maximum topological level in the graph      |
 
 ## 🔧 Usage Examples
 
@@ -117,7 +127,7 @@ data = load_aag_as_gnn_graph("c17.aag")
 # Access features
 print(f"Node features: {data.x.shape}")
 print(f"Edge features: {data.edge_attr.shape}")
-print(f"Global features: {data.global_x}")
+print(f"Global features: {data.global_x}")  # Now has 6 features
 ```
 
 ### Step-by-Step Pipeline

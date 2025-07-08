@@ -135,7 +135,7 @@ def _compute_global_features(data: Data, parsed: Dict, node_to_idx: Dict, idx_to
     """
     Compute graph-level features.
     
-    Features: [num_nodes, num_edges, num_inputs, num_outputs, avg_fanin]
+    Features: [num_nodes, num_edges, num_inputs, num_outputs, avg_fanin, max_level]
     """
     num_nodes = data.num_nodes
     num_edges = data.edge_index.size(1)
@@ -151,13 +151,18 @@ def _compute_global_features(data: Data, parsed: Dict, node_to_idx: Dict, idx_to
         avg_fanin = total_fanin / len(and_gate_nodes)
     else:
         avg_fanin = 0.0
-    
+
+    # Compute max topological level
+    levels = topological_sort(parsed)
+    max_level = max(levels.values()) if levels else 0.0
+
     global_features = torch.tensor([
         float(num_nodes),
         float(num_edges),
         float(num_inputs),
         float(num_outputs),
-        avg_fanin
+        avg_fanin,
+        float(max_level)
     ], dtype=torch.float)
     
     return global_features 
