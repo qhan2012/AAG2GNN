@@ -1,0 +1,26 @@
+{
+  "features": [
+    4.0,
+    6.0,
+    2.0,
+    2.0,
+    3.3333332538604736,
+    2.0
+  ],
+  "feature_names": [
+    "num_nodes",
+    "num_edges",
+    "num_inputs",
+    "num_outputs",
+    "avg_fanin",
+    "max_level"
+  ],
+  "feature_values": {
+    "num_nodes": 4.0,
+    "num_edges": 6.0,
+    "num_inputs": 2.0,
+    "num_outputs": 2.0,
+    "avg_fanin": 3.3333332538604736,
+    "max_level": 2.0
+  }
+}

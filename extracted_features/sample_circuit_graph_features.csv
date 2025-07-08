@@ -1,0 +1,2 @@
+num_nodes,num_edges,num_inputs,num_outputs,avg_fanin,max_level
+4.0,6.0,2.0,2.0,3.3333333,2.0

@@ -10,6 +10,7 @@ A Python library that transforms AAG (And-Inverter Graph) netlists into fully en
   - **Node Features**: Type indicators, connectivity metrics, topological levels
   - **Edge Features**: Inversion flags, level differences
   - **Graph Features**: Global statistics and metrics
+- **Offline Feature Extraction**: Save features to separate files (CSV, JSON, NumPy) for analysis
 - **One-Step Pipeline**: Simple API for quick conversion
 - **Modular Design**: Use individual components or the complete pipeline
 
@@ -29,6 +30,7 @@ pip install -r requirements.txt
 - `torch >= 1.9.0`
 - `torch-geometric >= 2.0.0`
 - `numpy >= 1.21.0`
+- `pandas >= 1.3.0`
 
 ## 🎯 Quick Start
 
@@ -78,6 +80,29 @@ Build basic PyG graph from parsed data.
 
 #### `add_node_and_edge_features(data, parsed)`
 Add comprehensive features to the graph.
+
+#### `extract_features_to_files(aag_file_path, output_dir, include_inverter=True, formats=None, node_mapping=True)`
+Extract features from an AAG file and save them to separate files.
+
+**Parameters:**
+- `aag_file_path` (str): Path to the `.aag` file
+- `output_dir` (str): Directory to save the extracted features
+- `include_inverter` (bool): Whether to include inverter edge features
+- `formats` (list, optional): List of output formats. Defaults to `['csv', 'json', 'npy']`
+- `node_mapping` (bool): Whether to save node mapping information
+
+**Returns:**
+- `Dict[str, str]`: Dictionary mapping feature types to their file paths
+
+#### `load_features_from_files(base_path, formats=None)`
+Load features from saved files.
+
+**Parameters:**
+- `base_path` (str): Base path to the saved feature files
+- `formats` (list, optional): List of formats to load. Defaults to `['npy']`
+
+**Returns:**
+- `Dict`: Dictionary containing loaded features
 
 ## 🧠 Feature Details
 
@@ -180,6 +205,36 @@ model = CircuitGNN(
 output = model(data.x, data.edge_index)
 ```
 
+### Offline Feature Extraction
+
+```python
+from aag2gnn import extract_features_to_files, load_features_from_files
+
+# Extract features to files
+saved_files = extract_features_to_files(
+    aag_file_path="circuit.aag",
+    output_dir="extracted_features",
+    formats=['csv', 'json', 'npy'],
+    node_mapping=True
+)
+
+# Files saved:
+# - circuit_node_features.csv/json/npy
+# - circuit_edge_features.csv/json/npy  
+# - circuit_graph_features.csv/json/npy
+# - circuit_node_mapping.csv/json
+
+# Load features back
+loaded_features = load_features_from_files(
+    base_path="extracted_features/circuit",
+    formats=['npy']
+)
+
+print(f"Node features shape: {loaded_features['node'].shape}")
+print(f"Edge features shape: {loaded_features['edge'].shape}")
+print(f"Graph features: {loaded_features['graph']}")
+```
+
 ## 📁 Project Structure
 
 ```
@@ -188,8 +243,10 @@ aag2gnn/
 ├── parser.py                # AAG file parser
 ├── graph_builder.py         # PyG graph construction
 ├── feature_extractor.py     # Feature computation
+├── offline_extractor.py     # Offline feature extraction
 ├── utils.py                 # Helper utilities
 ├── example.py               # Usage examples
+├── offline_example.py       # Offline extraction examples
 ├── requirements.txt         # Dependencies
 └── README.md               # This file
 ```

@@ -8,13 +8,16 @@ PyTorch Geometric graph representations with node, edge, and graph-level feature
 from .parser import parse_aag
 from .graph_builder import build_graph
 from .feature_extractor import add_node_and_edge_features
+from .offline_extractor import extract_features_to_files, load_features_from_files
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 __all__ = [
     "parse_aag",
     "build_graph", 
     "add_node_and_edge_features",
-    "load_aag_as_gnn_graph"
+    "load_aag_as_gnn_graph",
+    "extract_features_to_files",
+    "load_features_from_files"
 ]
 
 
