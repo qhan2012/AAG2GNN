@@ -207,6 +207,10 @@ output = model(data.x, data.edge_index)
 
 ### Offline Feature Extraction
 
+The library provides comprehensive offline feature extraction capabilities, allowing you to save and load features in multiple formats for analysis, visualization, and machine learning workflows.
+
+#### Basic Feature Extraction
+
 ```python
 from aag2gnn import extract_features_to_files, load_features_from_files
 
@@ -235,6 +239,182 @@ print(f"Edge features shape: {loaded_features['edge'].shape}")
 print(f"Graph features: {loaded_features['graph']}")
 ```
 
+#### Advanced Feature Extraction Options
+
+```python
+# Extract only specific formats
+saved_files = extract_features_to_files(
+    aag_file_path="large_circuit.aag",
+    output_dir="features",
+    formats=['csv', 'npy'],  # Skip JSON for large files
+    node_mapping=False,      # Don't save node mapping
+    include_inverter=False   # Skip inverter edge features
+)
+
+# Extract to custom directory structure
+saved_files = extract_features_to_files(
+    aag_file_path="benchmark/c17.aag",
+    output_dir="results/features/c17",
+    formats=['json']  # Only JSON format
+)
+```
+
+#### Working with Extracted Features
+
+**CSV Format** - Human-readable with headers:
+```python
+import pandas as pd
+
+# Load node features as DataFrame
+node_df = pd.read_csv("extracted_features/circuit_node_features.csv")
+print(node_df.head())
+
+# Analyze node types
+input_nodes = node_df[node_df['is_input'] == 1.0]
+and_gates = node_df[node_df['is_and'] == 1.0]
+print(f"Input nodes: {len(input_nodes)}")
+print(f"AND gates: {len(and_gates)}")
+```
+
+**JSON Format** - Structured data with metadata:
+```python
+import json
+
+# Load graph features
+with open("extracted_features/circuit_graph_features.json", 'r') as f:
+    graph_data = json.load(f)
+
+print("Graph statistics:")
+for name, value in graph_data['feature_values'].items():
+    print(f"  {name}: {value}")
+
+# Load node mapping
+with open("extracted_features/circuit_node_mapping.json", 'r') as f:
+    mapping_data = json.load(f)
+
+print(f"Node to index mapping: {mapping_data['node_to_idx']}")
+```
+
+**NumPy Format** - Efficient binary storage:
+```python
+import numpy as np
+
+# Load features for machine learning
+node_features = np.load("extracted_features/circuit_node_features.npy")
+edge_features = np.load("extracted_features/circuit_edge_features.npy")
+graph_features = np.load("extracted_features/circuit_graph_features.npy")
+
+# Use in ML pipeline
+print(f"Node features: {node_features.shape}")
+print(f"Edge features: {edge_features.shape}")
+print(f"Graph features: {graph_features.shape}")
+```
+
+#### Batch Processing Multiple Circuits
+
+```python
+import os
+from pathlib import Path
+
+# Process all AAG files in a directory
+aag_files = list(Path("benchmark/").glob("*.aag"))
+
+for aag_file in aag_files:
+    print(f"Processing {aag_file.name}...")
+    
+    saved_files = extract_features_to_files(
+        aag_file_path=str(aag_file),
+        output_dir=f"extracted_features/{aag_file.stem}",
+        formats=['csv', 'npy']
+    )
+    
+    print(f"✓ Saved {len(saved_files)} feature types")
+
+# Load all extracted features
+all_features = {}
+for aag_file in aag_files:
+    base_path = f"extracted_features/{aag_file.stem}/{aag_file.stem}"
+    features = load_features_from_files(base_path, formats=['npy'])
+    all_features[aag_file.stem] = features
+
+print(f"Loaded features for {len(all_features)} circuits")
+```
+
+#### Feature Analysis and Visualization
+
+```python
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Load features for analysis
+features = load_features_from_files("extracted_features/circuit", formats=['npy'])
+node_features = features['node']
+
+# Analyze node distribution by level
+levels = node_features[:, 5]  # level feature
+plt.figure(figsize=(10, 6))
+plt.hist(levels, bins=range(int(max(levels)) + 2), alpha=0.7)
+plt.xlabel('Topological Level')
+plt.ylabel('Number of Nodes')
+plt.title('Node Distribution by Topological Level')
+plt.show()
+
+# Analyze fanin/fanout distribution
+fanin = node_features[:, 3]   # fanin feature
+fanout = node_features[:, 4]  # fanout feature
+
+plt.figure(figsize=(12, 5))
+plt.subplot(1, 2, 1)
+plt.hist(fanin, alpha=0.7)
+plt.xlabel('Fan-in')
+plt.ylabel('Count')
+plt.title('Fan-in Distribution')
+
+plt.subplot(1, 2, 2)
+plt.hist(fanout, alpha=0.7)
+plt.xlabel('Fan-out')
+plt.ylabel('Count')
+plt.title('Fan-out Distribution')
+plt.tight_layout()
+plt.show()
+```
+
+#### Integration with Machine Learning Pipelines
+
+```python
+import numpy as np
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+
+# Load features for multiple circuits
+circuit_features = {}
+for circuit_name in ['c17', 'c432', 'c499']:
+    features = load_features_from_files(
+        f"extracted_features/{circuit_name}/{circuit_name}", 
+        formats=['npy']
+    )
+    circuit_features[circuit_name] = features
+
+# Prepare dataset for circuit classification
+X = []  # Graph features
+y = []  # Circuit labels
+
+for circuit_name, features in circuit_features.items():
+    graph_feat = features['graph'].flatten()  # 6 global features
+    X.append(graph_feat)
+    y.append(circuit_name)
+
+X = np.array(X)
+y = np.array(y)
+
+# Train a classifier
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+clf = RandomForestClassifier()
+clf.fit(X_train, y_train)
+
+print(f"Accuracy: {clf.score(X_test, y_test):.3f}")
+```
+
 ## 📁 Project Structure
 
 ```
@@ -253,6 +433,8 @@ aag2gnn/
 
 ## 🧪 Testing
 
+### Basic Library Testing
+
 Run the example script to test the library:
 
 ```bash
@@ -265,6 +447,59 @@ This will:
 3. Show feature analysis
 4. Test PyG compatibility
 5. Demonstrate GNN model integration
+
+### Offline Feature Extraction Testing
+
+Test the offline feature extraction functionality:
+
+```bash
+python aag2gnn/offline_example.py
+```
+
+This will:
+1. Create a sample AAG file
+2. Extract features to multiple formats (CSV, JSON, NumPy)
+3. Save node, edge, graph, and mapping features
+4. Load features back and display statistics
+5. Demonstrate the complete offline workflow
+
+### Expected Output
+
+The offline example should create the following directory structure:
+
+```
+extracted_features/
+├── sample_circuit_node_features.csv
+├── sample_circuit_node_features.json
+├── sample_circuit_node_features.npy
+├── sample_circuit_edge_features.csv
+├── sample_circuit_edge_features.json
+├── sample_circuit_edge_features.npy
+├── sample_circuit_graph_features.csv
+├── sample_circuit_graph_features.json
+├── sample_circuit_graph_features.npy
+├── sample_circuit_node_mapping.csv
+└── sample_circuit_node_mapping.json
+```
+
+### Feature Validation
+
+You can validate the extracted features by checking:
+
+```python
+import numpy as np
+import pandas as pd
+
+# Check node features
+node_df = pd.read_csv("extracted_features/sample_circuit_node_features.csv")
+print("Node features shape:", node_df.shape)
+print("Feature columns:", list(node_df.columns))
+
+# Check graph features
+graph_features = np.load("extracted_features/sample_circuit_graph_features.npy")
+print("Graph features:", graph_features)
+print("Max level feature:", graph_features[0, 5])  # 6th feature
+```
 
 ## 📋 AAG File Format
 
@@ -288,12 +523,95 @@ c
 comments...
 ```
 
+## 📁 Output File Formats
+
+The offline feature extraction supports multiple output formats, each optimized for different use cases:
+
+### CSV Format (`.csv`)
+- **Use case**: Human-readable analysis, Excel/Google Sheets, data exploration
+- **Features**: Headers, tabular format, easy to filter and sort
+- **Example**:
+  ```csv
+  is_input,is_output,is_and,fanin,fanout,level,node_id
+  1.0,0.0,0.0,0.0,2.0,0.0,1
+  0.0,0.0,1.0,2.0,1.0,1.0,3
+  ```
+
+### JSON Format (`.json`)
+- **Use case**: Web applications, structured data exchange, metadata storage
+- **Features**: Hierarchical structure, includes feature names and metadata
+- **Example**:
+  ```json
+  {
+    "features": [4.0, 6.0, 2.0, 2.0, 3.33, 2.0],
+    "feature_names": ["num_nodes", "num_edges", "num_inputs", "num_outputs", "avg_fanin", "max_level"],
+    "feature_values": {
+      "num_nodes": 4.0,
+      "max_level": 2.0
+    }
+  }
+  ```
+
+### NumPy Format (`.npy`)
+- **Use case**: Machine learning pipelines, high-performance computing
+- **Features**: Binary format, fast I/O, memory efficient
+- **Example**:
+  ```python
+  # Load directly as numpy array
+  features = np.load("circuit_features.npy")
+  print(features.shape)  # (1, 6) for graph features
+  ```
+
+### Node Mapping Files
+- **Purpose**: Maintains correspondence between AAG node IDs and feature indices
+- **Formats**: CSV and JSON
+- **Use case**: Debugging, result interpretation, custom analysis
+
 ## 🔄 Compatibility
 
 - **Python**: ≥ 3.8
 - **PyTorch**: ≥ 1.9.0
 - **PyTorch Geometric**: ≥ 2.0.0
+- **Pandas**: ≥ 1.3.0 (for CSV output)
+- **NumPy**: ≥ 1.21.0
 - **GNN Models**: Compatible with GCN, GAT, GIN, GraphSAGE, etc.
+
+## 💡 Best Practices & Tips
+
+### Feature Extraction Workflow
+
+1. **For Large Datasets**: Use NumPy format for storage efficiency
+   ```python
+   # Efficient for large circuits
+   extract_features_to_files("large_circuit.aag", "features", formats=['npy'])
+   ```
+
+2. **For Analysis**: Use CSV format for easy exploration
+   ```python
+   # Good for data analysis
+   extract_features_to_files("circuit.aag", "analysis", formats=['csv'])
+   ```
+
+3. **For Web Applications**: Use JSON format for structured data
+   ```python
+   # Good for web APIs
+   extract_features_to_files("circuit.aag", "api", formats=['json'])
+   ```
+
+### Performance Optimization
+
+- **Batch Processing**: Process multiple circuits in a loop
+- **Memory Management**: Use NumPy format for large feature matrices
+- **Directory Organization**: Use descriptive directory structures
+- **Error Handling**: Always check if files exist before loading
+
+### Common Use Cases
+
+- **Circuit Analysis**: Extract features for statistical analysis
+- **Machine Learning**: Prepare datasets for GNN training
+- **Visualization**: Create plots and charts from extracted features
+- **Benchmarking**: Compare different circuits using global features
+- **Debugging**: Use node mapping to trace feature indices back to circuit nodes
 
 ## 🤝 Contributing
 
